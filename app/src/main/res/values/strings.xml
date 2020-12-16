@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">InStat Test</string>
+
+    <string name="load_match_info_error">Unable to load match info</string>
+    <string name="load_match_videos_load_all_error">Unable to load match videos</string>
+    <string name="load_match_videos_load_specific_error">Unable to load some videos</string>
+
+    <string name="match_info_activity_title">Match info</string>
+    <string name="match_info_activity_load_button">Load info</string>
+    <string name="match_info_activity_empty_match_id_error">You have to enter match id</string>
+    <string name="match_info_activity_label_teams">Teams:</string>
+    <string name="match_info_activity_label_date">Date:</string>
+    <string name="match_info_activity_label_tournament">Tournament:</string>
+    <string name="match_info_activity_label_score">Score:</string>
+    <string name="match_info_activity_info_loading">Loading...</string>
+    <string name="match_info_activity_info_title">Information</string>
+    <string name="match_info_activity_videos_title">Videos</string>
+    <string name="match_info_activity_video_button">Video</string>
 </resources>
