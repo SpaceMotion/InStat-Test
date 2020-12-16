@@ -4,8 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,15 +26,32 @@ public class MainActivity extends AppCompatActivity {
     private static final int LOAD_MATCH_VIDEOS_ERROR_TYPE_ALL = 0;
     private static final int LOAD_MATCH_VIDEOS_ERROR_TYPE_SOME = 1;
 
+    private Button loadButton;
+    private EditText matchIdEditText;
+    private TextView teamsTextView;
+    private TextView dateTextView;
+    private TextView tournamentTextView;
+    private TextView scoreTextView;
+    private LinearLayout videosContainerLayout;
+    private TextView videosLoadingTextView;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.loadButton).setOnClickListener(new View.OnClickListener() {
+        loadButton = findViewById(R.id.loadButton);
+        matchIdEditText = findViewById(R.id.matchId);
+        teamsTextView = findViewById(R.id.teams);
+        dateTextView = findViewById(R.id.matchDate);
+        tournamentTextView = findViewById(R.id.tournamentName);
+        scoreTextView = findViewById(R.id.matchScore);
+        videosContainerLayout = findViewById(R.id.videosContainer);
+        videosLoadingTextView = findViewById(R.id.videosLoading);
+
+        loadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TextView matchIdTextView = (TextView)findViewById(R.id.matchId);
-                String sMatchId = matchIdTextView.getText().toString();
+                String sMatchId = matchIdEditText.getText().toString();
                 if (sMatchId.length() > 0) {
                     int matchId = Integer.parseInt(sMatchId);
                     loadMatchInfo(matchId);
@@ -63,10 +81,10 @@ public class MainActivity extends AppCompatActivity {
                         String team2NameEng = team2.getString(Constants.MATCH_INFO_KEY_TEAM_NAME_ENG);
                         int team2Score = team2.getInt(Constants.MATCH_INFO_KEY_TEAM_SCORE);
 
-                        ((TextView)findViewById(R.id.teams)).setText(team1NameEng + " vs " + team2NameEng);
-                        ((TextView)findViewById(R.id.matchDate)).setText(date);
-                        ((TextView)findViewById(R.id.tournamentName)).setText(tournamentNameEng);
-                        ((TextView)findViewById(R.id.matchScore)).setText(team1Score + " - " + team2Score);
+                        teamsTextView.setText(team1NameEng + " vs " + team2NameEng);
+                        dateTextView.setText(date);
+                        tournamentTextView.setText(tournamentNameEng);
+                        scoreTextView.setText(team1Score + " - " + team2Score);
                     } catch (IOException | JSONException e) {
                         clearMatchInfo();
                         showLoadMatchInfoError();
@@ -95,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         JSONArray matchVideos = new JSONArray(response.body().string());
                         boolean unableToLoadSomeVideosError = false;
-                        ViewGroup videosContainer = ((ViewGroup)findViewById(R.id.videosContainer));
                         String videoButtonLabel = getResources().getText(R.string.match_info_activity_video_button).toString();
                         for (int i = 0; i < matchVideos.length(); i++) {
                             try {
@@ -108,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     }
                                 });
-                                videosContainer.addView(button);
+                                videosContainerLayout.addView(button);
                             } catch (JSONException e) {
                                 unableToLoadSomeVideosError = true;
                             }
@@ -152,28 +169,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setLoadingMatchInfo() {
-        ((TextView)findViewById(R.id.teams)).setText(R.string.match_info_activity_info_loading);
-        ((TextView)findViewById(R.id.matchDate)).setText(R.string.match_info_activity_info_loading);
-        ((TextView)findViewById(R.id.tournamentName)).setText(R.string.match_info_activity_info_loading);
-        ((TextView)findViewById(R.id.matchScore)).setText(R.string.match_info_activity_info_loading);
+        teamsTextView.setText(R.string.match_info_activity_info_loading);
+        dateTextView.setText(R.string.match_info_activity_info_loading);
+        tournamentTextView.setText(R.string.match_info_activity_info_loading);
+        scoreTextView.setText(R.string.match_info_activity_info_loading);
     }
 
     private void clearMatchInfo() {
-        ((TextView)findViewById(R.id.teams)).setText("");
-        ((TextView)findViewById(R.id.matchDate)).setText("");
-        ((TextView)findViewById(R.id.tournamentName)).setText("");
-        ((TextView)findViewById(R.id.matchScore)).setText("");
+        teamsTextView.setText("");
+        dateTextView.setText("");
+        tournamentTextView.setText("");
+        scoreTextView.setText("");
     }
 
     private void setLoadingMatchVideos() {
-        ((TextView)findViewById(R.id.videosLoading)).setText(R.string.match_info_activity_info_loading);
+        videosLoadingTextView.setText(R.string.match_info_activity_info_loading);
     }
 
     private void clearLoadingMatchVideos() {
-        ((TextView)findViewById(R.id.videosLoading)).setText("");
+        videosLoadingTextView.setText("");
     }
 
     private void clearVideosContainer() {
-        ((ViewGroup)findViewById(R.id.videosContainer)).removeAllViews();
+        videosContainerLayout.removeAllViews();
     }
 }
