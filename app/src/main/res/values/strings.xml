@@ -15,5 +15,6 @@
     <string name="match_info_activity_info_loading">Loading...</string>
     <string name="match_info_activity_info_title">Information</string>
     <string name="match_info_activity_videos_title">Videos</string>
-    <string name="match_info_activity_video_button">Video</string>
+    <string name="match_info_activity_video_button">Play video</string>
+    <string name="match_info_activity_wrong_id">You enter wrong id, please try again</string>
 </resources>

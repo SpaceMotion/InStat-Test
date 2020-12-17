@@ -1,5 +1,6 @@
 package com.example.instattest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -16,6 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView scoreTextView;
     private LinearLayout videosContainerLayout;
     private TextView videosLoadingTextView;
+    private ArrayList<String> urls;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,17 +58,46 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String sMatchId = matchIdEditText.getText().toString();
                 if (sMatchId.length() > 0) {
-                    int matchId = Integer.parseInt(sMatchId);
-                    loadMatchInfo(matchId);
-                    loadMatchVideos(matchId);
+                    try {
+                        long matchId = Long.parseLong(sMatchId);
+                        loadMatchInfo(matchId);
+                        loadMatchVideos(matchId);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(MainActivity.this, R.string.match_info_activity_wrong_id, Toast.LENGTH_SHORT);
+                    }
                 } else {
                     Toast.makeText(MainActivity.this, R.string.match_info_activity_empty_match_id_error, Toast.LENGTH_SHORT);
                 }
             }
         });
+
+        if (savedInstanceState != null) {
+            teamsTextView.setText(savedInstanceState.getString(Constants.MATCH_INFO_STATE_KEY_TEAMS));
+            dateTextView.setText(savedInstanceState.getString(Constants.MATCH_INFO_STATE_KEY_DATE));
+            tournamentTextView.setText(savedInstanceState.getString(Constants.MATCH_INFO_STATE_KEY_TOURNAMENT));
+            scoreTextView.setText(savedInstanceState.getString(Constants.MATCH_INFO_STATE_KEY_SCORE));
+            urls = savedInstanceState.getStringArrayList(Constants.MATCH_INFO_STATE_KEY_URLS);
+            if (urls != null) {
+                Iterator<String> urlsIterator = urls.iterator();
+                clearVideosContainer();
+                while (urlsIterator.hasNext()) {
+                    addPlayVideoButton(urlsIterator.next());
+                }
+            }
+        }
     }
 
-    private void loadMatchInfo(int id) {
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(Constants.MATCH_INFO_STATE_KEY_TEAMS, teamsTextView.getText().toString());
+        outState.putString(Constants.MATCH_INFO_STATE_KEY_DATE, dateTextView.getText().toString());
+        outState.putString(Constants.MATCH_INFO_STATE_KEY_TOURNAMENT, tournamentTextView.getText().toString());
+        outState.putString(Constants.MATCH_INFO_STATE_KEY_SCORE, scoreTextView.getText().toString());
+        outState.putStringArrayList(Constants.MATCH_INFO_STATE_KEY_URLS, urls);
+    }
+
+    private void loadMatchInfo(long id) {
         setLoadingMatchInfo();
         try {
             ApiServiceImpl.getMatch(id, new Callback<ResponseBody>() {
@@ -86,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
                         dateTextView.setText(date);
                         tournamentTextView.setText(tournamentNameEng);
                         scoreTextView.setText(team1Score + " - " + team2Score);
-                    } catch (IOException | JSONException e) {
+                    } catch (IOException | JSONException | NullPointerException e) {
                         clearMatchInfo();
                         showLoadMatchInfoError();
                     }
@@ -104,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadMatchVideos(int matchId) {
+    private void loadMatchVideos(long matchId) {
         setLoadingMatchVideos();
         clearVideosContainer();
         try {
@@ -114,21 +147,12 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         JSONArray matchVideos = new JSONArray(response.body().string());
                         boolean unableToLoadSomeVideosError = false;
-                        String videoButtonLabel = getResources().getText(R.string.match_info_activity_video_button).toString();
+                        urls = new ArrayList<>();
                         for (int i = 0; i < matchVideos.length(); i++) {
                             try {
                                 String url = matchVideos.getJSONObject(i).getString(Constants.MATCH_VIDEOS_KEY_URL);
-                                Button button = new Button(MainActivity.this);
-                                button.setText(videoButtonLabel + " " + (i + 1));
-                                button.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Intent intent = new Intent(MainActivity.this, PlayVideoActivity.class);
-                                        intent.putExtra(Constants.MATCH_VIDEOS_KEY_URL, url);
-                                        startActivity(intent);
-                                    }
-                                });
-                                videosContainerLayout.addView(button);
+                                urls.add(url);
+                                addPlayVideoButton(url);
                             } catch (JSONException e) {
                                 unableToLoadSomeVideosError = true;
                             }
@@ -137,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                         if (unableToLoadSomeVideosError) {
                             showLoadMatchVideosError(LOAD_MATCH_VIDEOS_ERROR_TYPE_SOME);
                         }
-                    } catch (IOException | JSONException e) {
+                    } catch (IOException | JSONException | NullPointerException e) {
                         clearLoadingMatchVideos();
                         showLoadMatchVideosError(LOAD_MATCH_VIDEOS_ERROR_TYPE_ALL);
                     }
@@ -195,5 +219,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void clearVideosContainer() {
         videosContainerLayout.removeAllViews();
+    }
+
+    private void addPlayVideoButton(String url) {
+        String videoButtonLabel = getResources().getText(R.string.match_info_activity_video_button).toString();
+        Button button = new Button(this);
+        button.setText(videoButtonLabel);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, PlayVideoActivity.class);
+                intent.putExtra(Constants.MATCH_VIDEOS_KEY_URL, url);
+                startActivity(intent);
+            }
+        });
+        videosContainerLayout.addView(button);
     }
 }
