@@ -12,4 +12,6 @@ public class Constants {
     public static final String MATCH_INFO_KEY_TEAM_SCORE = "score";
 
     public static final String MATCH_VIDEOS_KEY_URL = "url";
+
+    public static final String PLAY_VIDEO_STATE_KEY_POSITION = "position";
 }
